@@ -2,6 +2,7 @@ package org.fawry.models;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,11 +27,11 @@ public class Cart {
 
     // Get the total price of the cart
     public BigDecimal getTotalPrice() {
-        double totalPrice = 0;
+        BigDecimal totalPrice = BigDecimal.ZERO;
         for (Map.Entry<Product, Integer> entry : products.entrySet()) {
-            totalPrice += entry.getKey().getPrice().doubleValue() * entry.getValue();
+            totalPrice = totalPrice.add(entry.getKey().getPrice().multiply(BigDecimal.valueOf(entry.getValue())));
         }
-        return BigDecimal.valueOf(totalPrice);
+        return totalPrice;
     }
 
     public boolean isEmpty() {
@@ -43,7 +44,7 @@ public class Cart {
             int quantity = entry.getValue();
 
             try {
-                if (product instanceof Expirable && ((Expirable) product).isExpired()) {
+                if (product instanceof Expirable expirable && expirable.isExpired()) {
                     throw new ProductExpiredException("Product " + product.getName() + " is expired");
                 }
 
@@ -69,7 +70,7 @@ public class Cart {
     }
 
     public Map<Product, Integer> getProducts() {
-        return new HashMap<>(products);
+        return Collections.unmodifiableMap(products);
     }
 
     public void clear() {
