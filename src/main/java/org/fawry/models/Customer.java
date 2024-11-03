@@ -9,6 +9,7 @@ import org.fawry.exceptions.InsufficientBalanceException;
 import org.fawry.exceptions.InsufficientStockException;
 import org.fawry.exceptions.InvalidProductException;
 import org.fawry.interfaces.Shippable;
+import org.fawry.products.ExpirableProduct;
 import org.fawry.services.ShippingService;
 
 public class Customer {
@@ -32,6 +33,13 @@ public class Customer {
             }
             if (quantity > product.getQuantity()) {
                 throw new InsufficientStockException("Not enough product in stock");
+            }
+            // If product is expirable, check if it's expired
+            if (product instanceof ExpirableProduct) {
+                ExpirableProduct expirableProduct = (ExpirableProduct) product;
+                if (expirableProduct.isExpired()) {
+                    throw new InvalidProductException("Product is expired");
+                }
             }
         } catch (InvalidProductException | InsufficientStockException e) {
             System.out.println("Error: " + e.getMessage());
@@ -59,7 +67,8 @@ public class Customer {
 
         try {
             if (balance.compareTo(total) < 0) {
-                throw new InsufficientBalanceException("Insufficient balance");
+                throw new InsufficientBalanceException(
+                        "Insufficient balance: Need $" + total + " but only have $" + balance);
             }
         } catch (InsufficientBalanceException e) {
             System.out.println("Error: " + e.getMessage());
@@ -83,7 +92,7 @@ public class Customer {
         cart = new Cart();
     }
 
-    public static void printReceipt(Map<Product, Integer> products, BigDecimal subtotal,
+    private void printReceipt(Map<Product, Integer> products, BigDecimal subtotal,
             BigDecimal shippingFees, BigDecimal total, BigDecimal remainingBalance) {
         System.out.println("** Checkout receipt **");
 
