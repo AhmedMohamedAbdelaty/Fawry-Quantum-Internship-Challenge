@@ -15,12 +15,18 @@ import org.fawry.services.ShippingService;
 public class Customer {
     private String name;
     private BigDecimal balance;
-    private Cart cart;
+    private final Cart cart;
 
-    public Customer(String name, BigDecimal balance) {
-        setName(name);
-        setBalance(balance);
-        cart = new Cart();
+    public Customer(String name, BigDecimal initialBalance) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Name cannot be empty");
+        }
+        if (initialBalance == null || initialBalance.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Initial balance cannot be negative");
+        }
+        this.name = name;
+        this.balance = initialBalance;
+        this.cart = new Cart();
     }
 
     public void addToCart(Product product, int quantity) {
@@ -81,7 +87,7 @@ public class Customer {
         }
 
         // Subtract total from balance
-        balance = balance.subtract(total);
+        deductFromBalance(total);
 
         // Print checkout receipt
         printReceipt(cart.getProducts(), subtotal, shippingFees, total, balance);
@@ -89,7 +95,7 @@ public class Customer {
         // Update product quantities
         updateProductQuantities();
 
-        cart = new Cart();
+        cart.clear();
     }
 
     private void printReceipt(Map<Product, Integer> products, BigDecimal subtotal,
@@ -112,6 +118,13 @@ public class Customer {
         cart.getProducts().forEach((product, quantity) -> product.setQuantity(product.getQuantity() - quantity));
     }
 
+    private void deductFromBalance(BigDecimal amount) {
+        if (amount.compareTo(balance) > 0) {
+            throw new InsufficientBalanceException("Insufficient balance");
+        }
+        balance = balance.subtract(amount);
+    }
+
     public String getName() {
         return name;
     }
@@ -129,10 +142,6 @@ public class Customer {
     }
 
     public Cart getCart() {
-        return cart;
-    }
-
-    public void setCart(Cart cart) {
-        this.cart = cart;
+        return (Cart) cart;
     }
 }
