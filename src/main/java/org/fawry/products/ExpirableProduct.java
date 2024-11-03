@@ -2,6 +2,7 @@ package org.fawry.products;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
 import org.fawry.interfaces.Expirable;
 import org.fawry.models.Product;
 
@@ -24,14 +25,17 @@ public class ExpirableProduct extends Product implements Expirable {
     }
 
     public void setExpirationDate(LocalDate expirationDate) {
-        if (expirationDate == null) {
-            throw new IllegalArgumentException("Expiration date can't be null");
-        }
+        try {
+            if (expirationDate == null) {
+                throw new IllegalArgumentException("Expiration date can't be null");
+            }
 
-        if (expirationDate.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Expiration date can't be in the past");
+            // if (expirationDate.isBefore(LocalDate.now())) {
+            //     throw new IllegalArgumentException("Expiration date can't be in the past");
+            // }
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
         }
-
         this.expirationDate = expirationDate;
     }
 }
