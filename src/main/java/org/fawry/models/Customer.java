@@ -3,7 +3,6 @@ package org.fawry.models;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.fawry.exceptions.CartEmptyException;
 import org.fawry.exceptions.InsufficientBalanceException;
@@ -16,8 +15,6 @@ public class Customer {
     private String name;
     private BigDecimal balance;
     private Cart cart;
-
-    private static final Logger logger = Logger.getLogger(Customer.class.getName());
 
     public Customer(String name, BigDecimal balance) {
         setName(name);
@@ -41,8 +38,6 @@ public class Customer {
             return;
         }
         cart.addProduct(product, quantity);
-        // System.out.println("Added " + quantity + " " + product.getName() + " to
-        // cart");
     }
 
     public void checkout() {
