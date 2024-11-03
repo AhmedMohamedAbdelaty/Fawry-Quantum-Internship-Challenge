@@ -1,5 +1,6 @@
 package org.fawry.models;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,12 +25,12 @@ public class Cart {
     }
 
     // Get the total price of the cart
-    public double getTotalPrice() {
+    public BigDecimal getTotalPrice() {
         double totalPrice = 0;
         for (Map.Entry<Product, Integer> entry : products.entrySet()) {
             totalPrice += entry.getKey().getPrice().doubleValue() * entry.getValue();
         }
-        return totalPrice;
+        return BigDecimal.valueOf(totalPrice);
     }
 
     public boolean isEmpty() {
@@ -41,12 +42,16 @@ public class Cart {
             Product product = entry.getKey();
             int quantity = entry.getValue();
 
-            if (product instanceof Expirable && ((Expirable) product).isExpired()) {
-                throw new ProductExpiredException("Product " + product.getName() + " is expired");
-            }
+            try {
+                if (product instanceof Expirable && ((Expirable) product).isExpired()) {
+                    throw new ProductExpiredException("Product " + product.getName() + " is expired");
+                }
 
-            if (quantity > product.getQuantity()) {
-                throw new InsufficientStockException("Product " + product.getName() + " is out of stock");
+                if (quantity > product.getQuantity()) {
+                    throw new InsufficientStockException("Product " + product.getName() + " is out of stock");
+                }
+            } catch (ProductExpiredException | InsufficientStockException e) {
+                System.out.println("Error: " + e.getMessage());
             }
         }
     }

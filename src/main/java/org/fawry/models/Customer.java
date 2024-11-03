@@ -2,6 +2,8 @@ package org.fawry.models;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 
 import org.fawry.exceptions.CartEmptyException;
 import org.fawry.exceptions.InsufficientBalanceException;
@@ -15,6 +17,8 @@ public class Customer {
     private BigDecimal balance;
     private Cart cart;
 
+    private static final Logger logger = Logger.getLogger(Customer.class.getName());
+
     public Customer(String name, BigDecimal balance) {
         setName(name);
         setBalance(balance);
@@ -22,53 +26,86 @@ public class Customer {
     }
 
     public void addToCart(Product product, int quantity) {
-        if (product == null) {
-            throw new InvalidProductException("Product can't be null");
-        }
-        if (quantity <= 0) {
-            throw new InvalidProductException("Quantity must be positive");
-        }
-        if (quantity > product.getQuantity()) {
-            throw new InsufficientStockException("Not enough product in stock");
+        try {
+            if (product == null) {
+                throw new InvalidProductException("Product can't be null");
+            }
+            if (quantity <= 0) {
+                throw new InvalidProductException("Quantity must be positive");
+            }
+            if (quantity > product.getQuantity()) {
+                throw new InsufficientStockException("Not enough product in stock");
+            }
+        } catch (InvalidProductException | InsufficientStockException e) {
+            System.out.println("Error: " + e.getMessage());
+            return;
         }
         cart.addProduct(product, quantity);
+        // System.out.println("Added " + quantity + " " + product.getName() + " to
+        // cart");
     }
 
     public void checkout() {
-        if (cart.isEmpty()) {
-            throw new CartEmptyException("Cart is empty");
+        try {
+            if (cart.isEmpty()) {
+                throw new CartEmptyException("Cart is empty");
+            }
+        } catch (CartEmptyException e) {
+            System.out.println("Error: " + e.getMessage());
+            return;
         }
 
         cart.validateItems();
 
-        BigDecimal subtotal = BigDecimal.valueOf(cart.getTotalPrice());
+        BigDecimal subtotal = cart.getTotalPrice();
         List<Shippable> shippableItems = cart.getShippableItems();
-        BigDecimal shippingFees = BigDecimal.valueOf(ShippingService.calculateShippingCost(shippableItems));
+        BigDecimal shippingFees = ShippingService.calculateShippingCost(shippableItems);
         BigDecimal total = subtotal.add(shippingFees);
 
-        if (balance.compareTo(total) < 0) {
-            throw new InsufficientBalanceException("Insufficient balance");
+        try {
+            if (balance.compareTo(total) < 0) {
+                throw new InsufficientBalanceException("Insufficient balance");
+            }
+        } catch (InsufficientBalanceException e) {
+            System.out.println("Error: " + e.getMessage());
+            return;
         }
 
-        // Print checkout details
-        System.out.println("\nCheckout Details:");
-        System.out.printf("Subtotal: $%.2f%n", subtotal);
-        System.out.printf("Shipping fees: $%.2f%n", shippingFees);
-        System.out.printf("Total paid: $%.2f%n", total);
-
-        // Process payment
-        balance = balance.subtract(total);
-        System.out.printf("Remaining balance: $%.2f%n", balance);
-
-        // Process shipping
+        // Print shipping notice if there are shippable items
         if (!shippableItems.isEmpty()) {
             ShippingService.shipItems(shippableItems);
         }
 
+        // Subtract total from balance
+        balance = balance.subtract(total);
+
+        // Print checkout receipt
+        printReceipt(cart.getProducts(), subtotal, shippingFees, total, balance);
+
         // Update product quantities
-        cart.getProducts().forEach((product, quantity) -> product.setQuantity(product.getQuantity() - quantity));
+        updateProductQuantities();
 
         cart = new Cart();
+    }
+
+    public static void printReceipt(Map<Product, Integer> products, BigDecimal subtotal,
+            BigDecimal shippingFees, BigDecimal total, BigDecimal remainingBalance) {
+        System.out.println("** Checkout receipt **");
+
+        products.forEach((product, quantity) -> System.out.printf("%dx %-14s %8.0f%n",
+                quantity,
+                product.getName(),
+                product.getPrice().multiply(BigDecimal.valueOf(quantity)).doubleValue()));
+
+        System.out.println("----------------------");
+        System.out.printf("Subtotal         %8.0f%n", subtotal.doubleValue());
+        System.out.printf("Shipping         %8.0f%n", shippingFees.doubleValue());
+        System.out.printf("Amount           %8.0f%n", total.doubleValue());
+        System.out.printf("Remaining balance: $%.2f%n", remainingBalance);
+    }
+
+    private void updateProductQuantities() {
+        cart.getProducts().forEach((product, quantity) -> product.setQuantity(product.getQuantity() - quantity));
     }
 
     public String getName() {
