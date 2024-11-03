@@ -17,6 +17,7 @@ public class ShippableProduct extends Product implements Shippable {
         if (weight <= 0) {
             throw new IllegalArgumentException("Weight must be greater than 0");
         }
+        this.weight = weight;
     }
 
     @Override
