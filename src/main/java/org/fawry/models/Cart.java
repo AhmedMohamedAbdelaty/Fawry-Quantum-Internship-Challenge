@@ -71,4 +71,8 @@ public class Cart {
     public Map<Product, Integer> getProducts() {
         return new HashMap<>(products);
     }
+
+    public void clear() {
+        products.clear();
+    }
 }
