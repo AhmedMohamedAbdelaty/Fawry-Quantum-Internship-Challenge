@@ -1,4 +1,4 @@
-package org.fawry.Interfaces;
+package org.fawry.interfaces;
 
 public interface Shippable {
 }
