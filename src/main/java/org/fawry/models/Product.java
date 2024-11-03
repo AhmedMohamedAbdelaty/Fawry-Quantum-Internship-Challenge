@@ -1,23 +1,31 @@
 package org.fawry.models;
 
-public class Product {
-    private String name;
-    private double price;
-    private int quantity;
+import java.math.BigDecimal;
+
+public abstract class Product {
+    private String name = "";
+    private BigDecimal price = BigDecimal.ZERO;
+    private int quantity = 0;
 
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Name can't be null or empty");
+        }
         this.name = name;
     }
 
-    public double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(BigDecimal price) {
+        if (price == null || price.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Price cam't be null or negative");
+        }
         this.price = price;
     }
 
@@ -26,6 +34,9 @@ public class Product {
     }
 
     public void setQuantity(int quantity) {
+        if (quantity < 0) {
+            throw new IllegalArgumentException("Quantity can't be negative");
+        }
         this.quantity = quantity;
     }
 }
