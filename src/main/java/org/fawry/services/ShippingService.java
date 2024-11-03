@@ -7,12 +7,18 @@ import java.util.stream.Collectors;
 
 import org.fawry.interfaces.Shippable;
 
-public class ShippingService {
-    private static final double SHIPPING_RATE_PER_KG = 10.0;
+public final class ShippingService {
+    private static final BigDecimal SHIPPING_RATE_PER_KG = BigDecimal.valueOf(10.0);
+
+    private ShippingService() {
+        // Prevent instantiation of utility class
+    }
 
     public static BigDecimal calculateShippingCost(List<Shippable> items) {
-        double totalWeight = items.stream().mapToDouble(Shippable::getWeight).sum();
-        return BigDecimal.valueOf(totalWeight * SHIPPING_RATE_PER_KG);
+        return items.stream()
+                .map(item -> BigDecimal.valueOf(item.getWeight())
+                        .multiply(SHIPPING_RATE_PER_KG))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public static void shipItems(List<Shippable> items) {
