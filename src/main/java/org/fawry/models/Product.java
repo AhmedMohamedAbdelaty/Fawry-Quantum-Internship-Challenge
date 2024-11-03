@@ -7,6 +7,12 @@ public abstract class Product {
     private BigDecimal price = BigDecimal.ZERO;
     private int quantity = 0;
 
+    public Product(String name, BigDecimal price, int quantity) {
+        setName(name);
+        setPrice(price);
+        setQuantity(quantity);
+    }
+
     public String getName() {
         return name;
     }
