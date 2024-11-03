@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.fawry.exceptions.InsufficientStockException;
+import org.fawry.exceptions.ProductExpiredException;
 import org.fawry.interfaces.Expirable;
 import org.fawry.interfaces.Shippable;
 
@@ -40,11 +42,11 @@ public class Cart {
             int quantity = entry.getValue();
 
             if (product instanceof Expirable && ((Expirable) product).isExpired()) {
-                throw new IllegalStateException("Product " + product.getName() + " is expired");
+                throw new ProductExpiredException("Product " + product.getName() + " is expired");
             }
 
             if (quantity > product.getQuantity()) {
-                throw new IllegalStateException("Product " + product.getName() + " is out of stock");
+                throw new InsufficientStockException("Product " + product.getName() + " is out of stock");
             }
         }
     }

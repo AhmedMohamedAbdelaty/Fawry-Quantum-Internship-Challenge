@@ -3,6 +3,10 @@ package org.fawry.models;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.fawry.exceptions.CartEmptyException;
+import org.fawry.exceptions.InsufficientBalanceException;
+import org.fawry.exceptions.InsufficientStockException;
+import org.fawry.exceptions.InvalidProductException;
 import org.fawry.interfaces.Shippable;
 import org.fawry.services.ShippingService;
 
@@ -19,20 +23,20 @@ public class Customer {
 
     public void addToCart(Product product, int quantity) {
         if (product == null) {
-            throw new IllegalArgumentException("Product can't be null");
+            throw new InvalidProductException("Product can't be null");
         }
         if (quantity <= 0) {
-            throw new IllegalArgumentException("Quantity must be positive");
+            throw new InvalidProductException("Quantity must be positive");
         }
         if (quantity > product.getQuantity()) {
-            throw new IllegalArgumentException("Not enough product in stock");
+            throw new InsufficientStockException("Not enough product in stock");
         }
         cart.addProduct(product, quantity);
     }
 
     public void checkout() {
         if (cart.isEmpty()) {
-            throw new IllegalStateException("Cart is empty");
+            throw new CartEmptyException("Cart is empty");
         }
 
         cart.validateItems();
@@ -43,7 +47,7 @@ public class Customer {
         BigDecimal total = subtotal.add(shippingFees);
 
         if (balance.compareTo(total) < 0) {
-            throw new IllegalStateException("Insufficient balance");
+            throw new InsufficientBalanceException("Insufficient balance");
         }
 
         // Print checkout details
